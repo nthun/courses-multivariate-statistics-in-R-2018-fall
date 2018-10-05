@@ -175,29 +175,29 @@ library(stringr)
 
 # Mind that that the data does not change, as we don't save it to any variable
 who_long %>% 
-    mutate(variable = str_replace(variable, "new_",""))
+    mutate(variable = str_remove(variable, "new_"))
     
 
 # This way, the variable contains 3 different information: test result, gender, and age
 # Let's separate the test result first
 
 who_long %>% 
-    mutate(variable = str_replace(variable, "new_","")) %>% 
+    mutate(variable = str_remove(variable, "new_")) %>% 
     separate(col = variable, into = c("test_result","gender_age"), sep = "_")
 
 # We still need to separate the gender from the age
 who_tidy <-
     who_long %>% 
-    mutate(variable = str_replace(variable, "new_","")) %>% 
+    mutate(variable = str_remove(variable, "new_")) %>% 
     separate(col = variable, into = c("test_result","gender_age"), sep = "_") %>% 
-    mutate(gender = gender_age %>% substring(1,1),
-           age_group = gender_age %>% substring(2))
+    mutate(gender =  str_sub(gender_age, 1,1),
+           age_group = str_sub(gender_age, 2))
 
 who_tidy
 
 # Now we can verify what age groups we have
 who_tidy %>% 
-    distinct(age)
+    distinct(age_group)
 
 # We can also transform the data to wide format, for e.g. the age groups. 
 # Let's say we only want to make the age groups in wide format, but keep the gender,  test results, year, etc. in long format
