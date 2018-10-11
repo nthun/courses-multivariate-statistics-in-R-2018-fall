@@ -21,7 +21,7 @@ titanic_train %>%
 ### Data importing
 # The easies way is to use data import from the "Files" window
 
-# IMPORTANT!! IN ORDER TO USE THIS CODE, YOU ALSO HAVE TO DOWNLOAD THE DATAFILES FROM THE COURSE'S PAGE, THAT YOU CAN FIND IN THE DATASETS LIBRARY! https://osf.io/nt8ps/
+# IMPORTANT!! IN ORDER TO USE THIS CODE, YOU ALSO HAVE TO DOWNLOAD THE DATAFILES FROM THE COURSE'S PAGE, THAT YOU CAN FIND IN THE DATASETS LIBRARY! https://minhaskamal.github.io/DownGit/#/home?url=https://github.com/nthun/courses-multivariate-statistics-in-R-2018-fall/tree/master/datasets
 
 # R has its own data format (.RData), that stores variables from R. You can load an R object using the load() function.
 # Usually, it is enough to provide the file name (with the relative or absolute path), but import functions often has optional parameters
