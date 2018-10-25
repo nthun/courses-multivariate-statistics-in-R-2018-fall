@@ -189,6 +189,10 @@ survey %>%
     geom_tile() +
     labs(fill = "log(n)")
 
+survey %>% 
+  ggplot() +
+  aes(x = Smoke, y = Exer) +
+  geom_count()
 
 
 # Plots for the slides ----------------------------------------------------

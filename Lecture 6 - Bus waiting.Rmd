@@ -1,0 +1,83 @@
+---
+title: "When will the bus come?"
+output: html_notebook
+---
+
+```{r Load libraries, include=FALSE}
+library(tidyverse)
+library(googlesheets)
+library(stargazer)
+library(ggfortify)
+```
+
+
+We investigated the factors that people use when estimating waiting times at a bus stop. The number of people in the bus stop was used as a predictor, along with time of day (day/night), and place (rural/city).
+We hypothesized that all of these factors will predict waiting times.
+
+```{r Read data, include=FALSE}
+bus_raw <-    
+        gs_title("When will the bus come? (Responses)") %>% 
+        gs_read(1)
+
+
+bus_df <-
+        bus_raw %>% 
+        select(-Timestamp) %>% 
+        set_names(str_extract(names(.), "._._\\d+")) %>% 
+        mutate(id = row_number()) %>% 
+        gather(variable, wait, -id) %>% 
+        separate(variable, 
+                 into = c("place", "time", "people"), 
+                 sep = "_", 
+                 convert = TRUE) %>% 
+        mutate(place = if_else(place == "R", "Rural", "City"),
+               time = if_else(time == "D", "Day", "Night"))
+```
+
+```{r Plot1, echo=FALSE}
+bus_df %>% 
+        ggplot() +
+        aes(x = people, y = wait) +
+        geom_point() +
+        geom_smooth(method = "lm") +
+        ggtitle("Estimated waiting time based on the number of people")
+```
+
+```{r Plot2, echo=FALSE}
+bus_df %>% 
+        ggplot() +
+        aes(x = people, y = wait) +
+        geom_point() +
+        facet_grid(time ~ place) +
+        geom_smooth(method = "lm") +
+        ggtitle("Estimated waiting time based on the number of people",
+                subtitle = "separately by time of day and place")
+```
+
+```{r echo=FALSE, fig.width=11, warning=FALSE, results='asis'}
+lm_wait_1 <- lm(wait ~ people + time + place, data = bus_df)
+lm_wait_2 <- lm(wait ~ people + time * place, data = bus_df)
+lm_wait_3 <- lm(wait ~ people * place + time, data = bus_df)
+
+lm_wait_1$AIC <- AIC(lm_wait_1)
+lm_wait_2$AIC <- AIC(lm_wait_2)
+lm_wait_3$AIC <- AIC(lm_wait_3)
+
+lm_wait_1$BIC <- BIC(lm_wait_1)
+lm_wait_2$BIC <- BIC(lm_wait_2)
+lm_wait_3$BIC <- BIC(lm_wait_3)
+
+stargazer(lm_wait_1, lm_wait_2, lm_wait_3, 
+          type = "html",
+          df = TRUE,
+          ci = TRUE,
+          digits = 2,
+          keep.stat=c("aic", "bic","rsq", "adj.rsq", "f", "n"))
+```
+
+```{r residuals}
+
+autoplot(lm_wait_1, which = 1:6)
+
+```
+
