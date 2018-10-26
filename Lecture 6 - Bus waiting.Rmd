@@ -3,18 +3,17 @@ title: "When will the bus come?"
 output: html_notebook
 ---
 
-```{r Load libraries, include=FALSE}
+```{r setup}
 library(tidyverse)
 library(googlesheets)
 library(stargazer)
 library(ggfortify)
 ```
 
-
 We investigated the factors that people use when estimating waiting times at a bus stop. The number of people in the bus stop was used as a predictor, along with time of day (day/night), and place (rural/city).
 We hypothesized that all of these factors will predict waiting times.
 
-```{r Read data, include=FALSE}
+```{r read_data}
 bus_raw <-    
         gs_title("When will the bus come? (Responses)") %>% 
         gs_read(1)
@@ -34,7 +33,10 @@ bus_df <-
                time = if_else(time == "D", "Day", "Night"))
 ```
 
-```{r Plot1, echo=FALSE}
+# Investigating the main effect of the number of people on the predicted waiting time.
+It seems like the more people are in the station, the less waiting time we predict.
+
+```{r main_effect_of_ppl}
 bus_df %>% 
         ggplot() +
         aes(x = people, y = wait) +
@@ -43,7 +45,11 @@ bus_df %>%
         ggtitle("Estimated waiting time based on the number of people")
 ```
 
-```{r Plot2, echo=FALSE}
+# Investigating the joint effect of the number of people, the environment (city/rural), and time of day (day/night)
+We can see that the trend is similar in all constellations. This means that interaction effects are unlikely.  
+However, the main effect of time of day and environment are yet to be investigated.
+
+```{r interaction_plot, echo=FALSE}
 bus_df %>% 
         ggplot() +
         aes(x = people, y = wait) +
@@ -54,20 +60,27 @@ bus_df %>%
                 subtitle = "separately by time of day and place")
 ```
 
-```{r echo=FALSE, fig.width=11, warning=FALSE, results='asis'}
-lm_wait_1 <- lm(wait ~ people + time + place, data = bus_df)
-lm_wait_2 <- lm(wait ~ people + time * place, data = bus_df)
-lm_wait_3 <- lm(wait ~ people * place + time, data = bus_df)
+# Comparing the models
+
+The best model is the one that has all predictors as main effects, but no interactions. We know this because we compare the AIC and BIC values, and look for the smallest (at least by 2 units). If the AIC and BIC are within 2 units across two competing models, we should choose the simpler model as the best. That is, the one with fewer df-s.
+
+```{r models, fig.width=11, warning=FALSE, results='asis'}
+lm_wait_1 <- lm(wait ~ people + time, data = bus_df)
+lm_wait_2 <- lm(wait ~ people + place, data = bus_df)
+lm_wait_3 <- lm(wait ~ people + place + time, data = bus_df)
+lm_wait_4 <- lm(wait ~ people + time * place, data = bus_df)
 
 lm_wait_1$AIC <- AIC(lm_wait_1)
 lm_wait_2$AIC <- AIC(lm_wait_2)
 lm_wait_3$AIC <- AIC(lm_wait_3)
+lm_wait_4$AIC <- AIC(lm_wait_4)
 
 lm_wait_1$BIC <- BIC(lm_wait_1)
 lm_wait_2$BIC <- BIC(lm_wait_2)
 lm_wait_3$BIC <- BIC(lm_wait_3)
+lm_wait_4$BIC <- BIC(lm_wait_4)
 
-stargazer(lm_wait_1, lm_wait_2, lm_wait_3, 
+stargazer(lm_wait_1, lm_wait_2, lm_wait_3, lm_wait_4,
           type = "html",
           df = TRUE,
           ci = TRUE,
@@ -75,7 +88,9 @@ stargazer(lm_wait_1, lm_wait_2, lm_wait_3,
           keep.stat=c("aic", "bic","rsq", "adj.rsq", "f", "n"))
 ```
 
-```{r residuals}
+# Residual diagnostic plots
+
+```{r residuals, fig.width=11}
 
 autoplot(lm_wait_1, which = 1:6)
 
