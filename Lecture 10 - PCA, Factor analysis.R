@@ -203,6 +203,7 @@ semPaths(fit, "std")
 # "
 
 # Lets define the model in a separate file, and read it (this may be a good way to keep your model)
+# You can find this file next to the script in a separate directory (CFA models)
 
 hs_model_fi <- read_lines("CFA models/fs_model_fi.txt")
 
